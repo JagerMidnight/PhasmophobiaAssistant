@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - PhasmoGuide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light+Two&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Shadows Into Light Two', cursive;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #2a2a2a;
+            border: 2px solid #5a5a5a;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 4rem;
+            color: #ff5555;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .return-link {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1.25rem;
+            background-color: #5555ff;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .return-link:hover {
+            background-color: #7777ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="404-title">404</h1>
+        <p id="message">Error Loading Message</p>
+        <a href="/" class="return-link" id="action-link">Error Loading Custom Message</a>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = [
+                { message: "We tried Spirit Box many times, but still couldn't get a response.", action: "Try Again" },
+                { message: "We pushed pins on the voodoo doll, hoping for a reaction, but nothing...", action: "Push another pin" },
+                { message: "We asked the Ouija Board how old it was, but it didn't respond.", action: "Ask another question" },
+                { message: "Our server pulled tarot cards, but got hanged man.", action: "Return to Safety" }
+            ];
+
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            const randomEntry = messages[randomIndex];
+
+            document.getElementById('message').textContent = randomEntry.message;
+            document.getElementById('action-link').textContent = randomEntry.action;
+        });
+    </script>
+</body>
+</html>
