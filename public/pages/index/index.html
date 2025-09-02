@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phasmophobia Helper</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #2c2f33;
+            color: #dcddde;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 960px;
+            background-color: #36393f;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #42464c;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            cursor: pointer;
+            background-color: transparent;
+            color: #dcddde;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: color 0.3s, background-color 0.3s;
+            border-radius: 8px 8px 0 0;
+            text-decoration: none; 
+        }
+
+        .tab-button:hover:not(.active) {
+            background-color: #40444b;
+        }
+
+        .tab-button.active {
+            background-color: #7289da;
+            color: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            color: #7289da;
+            border-bottom: 1px solid #7289da;
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .evidence-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #40444b;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .evidence-item input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #5d616d;
+            border-radius: 4px;
+            background-color: #2f3136;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .evidence-item input[type="checkbox"]:checked {
+            background-color: #7289da;
+            border-color: #7289da;
+        }
+
+        .evidence-item input[type="checkbox"]:checked::after {
+            content: '\2713';
+            font-size: 14px;
+            color: #ffffff;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .ghosts-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .ghost-item {
+            background-color: #40444b;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            transition: color 0.3s, text-decoration 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .ghost-item.excluded-by-evidence {
+            color: #ff5555;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .ghost-item.user-circled::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border: 2px solid #7289da;
+            border-radius: 12px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .ghost-item.user-excluded {
+            color: #ffcc4d;
+            text-decoration: line-through;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 850px) {
+            .shop-content-wrapper {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .tab-button {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+            .ghosts-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="evidence">Evidence</button>
+            <a href="/Ghosts" class="tab-button">Ghosts</a>
+            <a href="/Shop" class="tab-button">Shop</a>
+            <a href="/about" class="tab-button">About</a>
+        </div>
+
+        <div id="evidence-tab" class="tab-content active">
+            <h2>Evidence Tracker</h2>
+            
+            <div id="evidence-checkboxes" class="evidence-grid">
+            </div>
+
+            <ul id="ghosts-list-evidence" class="ghosts-list">
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const evidenceCheckboxesContainer = document.getElementById('evidence-checkboxes');
+            const ghostsListEvidence = document.getElementById('ghosts-list-evidence');
+
+            const ghostsData = [
+                { name: "Spirit", evidence: ["EMF 5", "Ghost Writing", "Spirit Box"] },
+                { name: "Wraith", evidence: ["EMF 5", "Spirit Box", "D.O.T.S Projector"] },
+                { name: "Phantom", evidence: ["Spirit Box", "Fingerprints", "D.O.T.S Projector"] },
+                { name: "Poltergeist", evidence: ["Spirit Box", "Fingerprints", "Ghost Writing"] },
+                { name: "Banshee", evidence: ["Fingerprints", "Ghost Orbs", "D.O.T.S Projector"] },
+                { name: "Jinn", evidence: ["EMF 5", "Fingerprints", "Freezing Temps"] },
+                { name: "Mare", evidence: ["Spirit Box", "Ghost Orbs", "Ghost Writing"] },
+                { name: "Revenant", evidence: ["Ghost Orbs", "Ghost Writing", "Freezing Temps"] },
+                { name: "Shade", evidence: ["EMF 5", "Ghost Writing", "Freezing Temps"] },
+                { name: "Demon", evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"] },
+                { name: "Yurei", evidence: ["Ghost Orbs", "Freezing Temps", "D.O.T.S Projector"] },
+                { name: "Oni", evidence: ["EMF 5", "Freezing Temps", "D.O.T.S Projector"] },
+                { name: "Yokai", evidence: ["Spirit Box", "Ghost Orbs", "D.O.T.S Projector"] },
+                { name: "Hantu", evidence: ["Fingerprints", "Ghost Orbs", "Freezing Temps"] },
+                { name: "Goryo", evidence: ["EMF 5", "Fingerprints", "D.O.T.S Projector"] },
+                { name: "Myling", evidence: ["EMF 5", "Fingerprints", "Ghost Writing"] },
+                { name: "Obake", evidence: ["EMF 5", "Ghost Orbs", "Fingerprints"] },
+                { name: "The Twins", evidence: ["EMF 5", "Spirit Box", "Freezing Temps"] },
+                { name: "Onryo", evidence: ["Spirit Box", "Ghost Orbs", "Freezing Temps"] },
+                { name: "Raiju", evidence: ["EMF 5", "Ghost Orbs", "D.O.T.S Projector"] },
+                { name: "Thaye", evidence: ["Ghost Orbs", "Ghost Writing", "D.O.T.S Projector"] },
+                { name: "Deogen", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S Projector"] },
+                { name: "Moroi", evidence: ["Spirit Box", "Ghost Writing", "Freezing Temps"] },
+                { name: "The Mimic", evidence: ["Spirit Box", "Freezing Temps", "Fingerprints", "Ghost Orbs"] }
+            ];
+
+            const evidenceTypes = [
+                "EMF 5", "Spirit Box", "Fingerprints", "Freezing Temps", "Ghost Orbs", "Ghost Writing", "D.O.T.S Projector"
+            ];
+            
+            const renderEvidenceCheckboxes = () => {
+                evidenceCheckboxesContainer.innerHTML = '';
+                evidenceTypes.forEach(evidence => {
+                    const label = document.createElement('label');
+                    label.className = 'evidence-item';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = evidence;
+                    checkbox.addEventListener('change', updateGhostList);
+                    const span = document.createElement('span');
+                    span.textContent = evidence;
+                    label.appendChild(checkbox);
+                    label.appendChild(span);
+                    evidenceCheckboxesContainer.appendChild(label);
+                });
+            };
+
+            const renderGhostList = () => {
+                ghostsListEvidence.innerHTML = '';
+                ghostsData.forEach(ghost => {
+                    const li = document.createElement('li');
+                    li.className = 'ghost-item';
+                    li.textContent = ghost.name;
+                    li.setAttribute('data-evidence', ghost.evidence.join(','));
+                    li.setAttribute('data-state', 'none');
+                    li.addEventListener('click', toggleUserMarking);
+                    ghostsListEvidence.appendChild(li);
+                });
+            };
+
+            const toggleUserMarking = (event) => {
+                const item = event.target;
+                const currentState = item.getAttribute('data-state');
+
+                if (currentState === 'none') {
+                    item.setAttribute('data-state', 'circled');
+                    item.classList.add('user-circled');
+                } else if (currentState === 'circled') {
+                    item.setAttribute('data-state', 'excluded');
+                    item.classList.remove('user-circled');
+                    item.classList.add('user-excluded');
+                } else {
+                    item.setAttribute('data-state', 'none');
+                    item.classList.remove('user-excluded');
+                }
+            };
+
+            const updateGhostList = () => {
+                const checkedEvidences = Array.from(document.querySelectorAll('#evidence-checkboxes input:checked')).map(cb => cb.value);
+                const ghostItems = document.querySelectorAll('.ghost-item');
+
+                ghostItems.forEach(item => {
+                    const itemEvidence = item.getAttribute('data-evidence').split(',');
+                    const isPossible = checkedEvidences.every(evidence => itemEvidence.includes(evidence));
+                    
+                    if (isPossible) {
+                        item.classList.remove('excluded-by-evidence');
+                    } else {
+                        item.classList.add('excluded-by-evidence');
+                    }
+                });
+            };
+
+            const handleTabSwitch = (event) => {
+                const selectedTab = event.target.dataset.tab;
+                tabs.forEach(tab => tab.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                document.querySelector(`[data-tab="${selectedTab}"]`).classList.add('active');
+                document.getElementById(`${selectedTab}-tab`).classList.add('active');
+            };
+
+            const evidenceTabButton = document.querySelector('[data-tab="evidence"]');
+            if (evidenceTabButton) {
+                evidenceTabButton.addEventListener('click', handleTabSwitch);
+            }
+            
+            renderEvidenceCheckboxes();
+            renderGhostList();
+        });
+    </script>
+</body>
+</html>
